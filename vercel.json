@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/server/server.js",
-      "use": "@vercel/node"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/client",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "functions": {
+    "dist/server/server.js": {
+      "includeFiles": "dist/server/**"
     }
-  ],
-  "routes": [
-    { "src": "/assets/(.*)", "dest": "/dist/client/assets/$1" },
-    { "src": "/(.*)", "dest": "/dist/server/server.js" }
-  ]
+  }
 }
