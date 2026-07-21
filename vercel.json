@@ -1,12 +1,11 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/client",
+  "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "functions": {
-    "dist/server/server.js": {
-      "includeFiles": "dist/server/**"
-    }
-  }
+  "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/client/assets/$1" },
+    { "source": "/(.*)", "destination": "/server/server.js" }
+  ]
 }
