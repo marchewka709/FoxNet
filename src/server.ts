@@ -1,9 +1,3 @@
-import { createStart } from "@tanstack/react-start";
-
-const start = createStart();
-
-export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
-    return await start.fetch(request, env, ctx);
-  },
-};
+// Placeholder for potential future SSR use.
+// Currently Vercel uses static hosting only.
+export {};
