@@ -72,24 +72,33 @@ const PRODUCTS: Product[] = [
   },
 ];
 
-export const productsQuery = (category: ProductCategory) =>
-  new Promise<Product[]>((resolve) =>
-    setTimeout(
-      () => resolve(PRODUCTS.filter((p) => p.category === category)),
-      100,
+export const productsQuery = (category: ProductCategory) => ({
+  queryKey: ["products", category],
+  queryFn: () =>
+    new Promise<Product[]>((resolve) =>
+      setTimeout(
+        () => resolve(PRODUCTS.filter((p) => p.category === category)),
+        100,
+      ),
     ),
-  );
+});
 
-export const allProductsQuery = () =>
-  new Promise<Product[]>((resolve) =>
-    setTimeout(() => resolve([...PRODUCTS]), 100),
-  );
+export const allProductsQuery = () => ({
+  queryKey: ["products"],
+  queryFn: () =>
+    new Promise<Product[]>((resolve) =>
+      setTimeout(() => resolve([...PRODUCTS]), 100),
+    ),
+});
 
-export const productQuery = (slug: string) =>
-  new Promise<Product>((resolve, reject) => {
-    setTimeout(() => {
-      const product = PRODUCTS.find((p) => p.slug === slug);
-      if (!product) return reject(new Error("Product not found"));
-      resolve(product);
-    }, 100);
-  });
+export const productQuery = (slug: string) => ({
+  queryKey: ["product", slug],
+  queryFn: () =>
+    new Promise<Product>((resolve, reject) => {
+      setTimeout(() => {
+        const product = PRODUCTS.find((p) => p.slug === slug);
+        if (!product) return reject(new Error("Product not found"));
+        resolve(product);
+      }, 100);
+    }),
+});
