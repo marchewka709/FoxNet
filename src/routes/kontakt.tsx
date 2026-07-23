@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, type ChangeEvent } from "react";
+import { useState, useCallback, memo, useRef } from "react";
 import { z } from "zod";
-import { motion } from "motion/react";
 import { Mail, MapPin, Phone, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell, PageHero } from "@/components/PageShell";
@@ -33,107 +32,142 @@ const schema = z.object({
 });
 
 function ContactPage() {
-  const { t } = useI18n();
-  const { product } = Route.useSearch();
-  const [form, setForm] = useState({ 
-    name: "", 
-    email: "", 
-    phone: "", 
-    message: product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : "" 
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const updateField = useCallback((field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [field]: e.target.value }));
-  }, []);
-
-  const submit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    setForm(prev => {
-      const parsed = schema.safeParse(prev);
-      if (!parsed.success) {
-        toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
-        return prev;
-      }
-      setSubmitting(true);
-      setTimeout(() => {
-        setSubmitting(false);
-        setForm({ name: "", email: "", phone: "", message: "" });
-        toast.success(t("contact.form.thanks"));
-      }, 700);
-      return prev;
-    });
-  }, [t]);
-
   return (
     <PageShell>
-      <PageHero title={t("page.contact.title")} subtitle={t("page.contact.subtitle")} />
+      <PageHero title="Kontakt" subtitle="Skontaktuj się z nami" />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-5">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-2 space-y-4"
-          >
-            {[
-              { icon: MapPin, label: t("contact.info.address"), value: "FOXNET Kasy i drukarki fiskalne\nul. Wojciecha Cybulskiego 2/4\n50-206 Wrocław" },
-              { icon: Phone, label: t("contact.info.phone"), value: "+48 71 390 09 00" },
-              { icon: Mail, label: t("contact.info.email"), value: "biuro@foxnet.wroc.pl" },
-              { icon: Clock, label: t("contact.info.hours"), value: t("contact.hours") },
-            ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 sm:gap-4 rounded-2xl border border-primary/10 bg-white p-4 sm:p-5 shadow-card">
-                <div className="inline-flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary-bright">
-                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{item.label}</p>
-                  <p className="mt-1 whitespace-pre-line text-xs sm:text-sm font-medium text-primary">{item.value}</p>
-                </div>
-              </div>
-            ))}
-            <div className="overflow-hidden rounded-2xl border border-primary/10 shadow-card">
-              <iframe
-                title="Foxnet map"
-                src="https://www.google.com/maps?q=Wojciecha+Cybulskiego+2%2F4+Wroc%C5%82aw&output=embed"
-                className="h-56 sm:h-64 w-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-          </motion.div>
-
-            <form
-            onSubmit={submit}
-            className="lg:col-span-3 space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-primary/10 bg-white p-5 shadow-elegant sm:p-8"
-          >
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label={t("contact.form.name")}>
-                <input required maxLength={100} value={form.name} onChange={updateField("name")} className={inputCls} />
-              </Field>
-              <Field label={t("contact.form.email")}>
-                <input required type="email" maxLength={255} value={form.email} onChange={updateField("email")} className={inputCls} />
-              </Field>
-            </div>
-            <Field label={t("contact.form.phone")}>
-              <input maxLength={30} value={form.phone} onChange={updateField("phone")} className={inputCls} />
-            </Field>
-            <Field label={t("contact.form.message")}>
-              <textarea required maxLength={1000} rows={6} value={form.message} onChange={updateField("message")} className={`${inputCls} resize-none`} />
-            </Field>
-            <button
-              type="submit"
-              disabled={submitting}
-                className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 sm:px-6 sm:py-3 text-sm font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02] disabled:opacity-70"
-            >
-              {t("contact.form.submit")}
-              <Send className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
-          </form>
+          <ContactInfo />
+          <ContactForm />
         </div>
       </section>
     </PageShell>
+  );
+}
+
+const ContactInfo = memo(function ContactInfo() {
+  const { t } = useI18n();
+  return (
+    <div className="lg:col-span-2 space-y-4">
+      {[
+        { icon: MapPin, label: t("contact.info.address"), value: "FOXNET Kasy i drukarki fiskalne\nul. Wojciecha Cybulskiego 2/4\n50-206 Wrocław" },
+        { icon: Phone, label: t("contact.info.phone"), value: "+48 71 390 09 00" },
+        { icon: Mail, label: t("contact.info.email"), value: "biuro@foxnet.wroc.pl" },
+        { icon: Clock, label: t("contact.info.hours"), value: t("contact.hours") },
+      ].map((item) => (
+        <div key={item.label} className="flex items-start gap-3 sm:gap-4 rounded-2xl border border-primary/10 bg-white p-4 sm:p-5 shadow-card">
+          <div className="inline-flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary-bright">
+            <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{item.label}</p>
+            <p className="mt-1 whitespace-pre-line text-xs sm:text-sm font-medium text-primary">{item.value}</p>
+          </div>
+        </div>
+      ))}
+      <div className="overflow-hidden rounded-2xl border border-primary/10 shadow-card">
+        <iframe
+          title="Foxnet map"
+          src="https://www.google.com/maps?q=Wojciecha+Cybulskiego+2%2F4+Wroc%C5%82aw&output=embed"
+          className="h-56 sm:h-64 w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </div>
+  );
+});
+
+function ContactForm() {
+  const { product } = Route.useSearch();
+  const { t } = useI18n();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Use refs to avoid re-renders on every keystroke
+  const formRef = useRef({
+    name: "",
+    email: "",
+    phone: "",
+    message: product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : ""
+  });
+
+  const handleChange = useCallback((field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    formRef.current = { ...formRef.current, [field]: e.target.value };
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const data = formRef.current;
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      formRef.current = { name: "", email: "", phone: "", message: "" };
+      // Force re-render to clear inputs
+      forceUpdate(fn => fn + 1);
+      toast.success(t("contact.form.thanks"));
+    }, 700);
+  }, [t]);
+
+  const [, forceUpdate] = useState(0);
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="lg:col-span-3 space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-primary/10 bg-white p-5 shadow-elegant sm:p-8"
+    >
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label={t("contact.form.name")}>
+          <input
+            required
+            maxLength={100}
+            defaultValue={formRef.current.name}
+            onChange={handleChange("name")}
+            className={inputCls}
+          />
+        </Field>
+        <Field label={t("contact.form.email")}>
+          <input
+            required
+            type="email"
+            maxLength={255}
+            defaultValue={formRef.current.email}
+            onChange={handleChange("email")}
+            className={inputCls}
+          />
+        </Field>
+      </div>
+      <Field label={t("contact.form.phone")}>
+        <input
+          maxLength={30}
+          defaultValue={formRef.current.phone}
+          onChange={handleChange("phone")}
+          className={inputCls}
+        />
+      </Field>
+      <Field label={t("contact.form.message")}>
+        <textarea
+          required
+          maxLength={1000}
+          rows={6}
+          defaultValue={formRef.current.message}
+          onChange={handleChange("message")}
+          className={`${inputCls} resize-none`}
+        />
+      </Field>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 sm:px-6 sm:py-3 text-sm font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02] disabled:opacity-70"
+      >
+        {t("contact.form.submit")}
+        <Send className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </button>
+    </form>
   );
 }
 
