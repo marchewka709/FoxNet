@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Mail, MapPin, Phone, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell, PageHero } from "@/components/PageShell";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type TKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/kontakt")({
   head: () => ({
@@ -32,13 +32,15 @@ const schema = z.object({
 });
 
 function ContactPage() {
+  const { product } = Route.useSearch();
+  const { t } = useI18n();
   return (
     <PageShell>
       <PageHero title="Kontakt" subtitle="Skontaktuj się z nami" />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-5">
           <ContactInfo />
-          <ContactForm />
+          <ContactForm product={product} t={t} />
         </div>
       </section>
     </PageShell>
@@ -78,9 +80,7 @@ const ContactInfo = memo(function ContactInfo() {
   );
 });
 
-function ContactForm() {
-  const { product } = Route.useSearch();
-  const { t } = useI18n();
+const ContactForm = memo(function ContactForm({ product, t }: { product: string; t: (k: TKey) => string }) {
   const [submitting, setSubmitting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -147,7 +147,7 @@ function ContactForm() {
       </button>
     </form>
   );
-}
+});
 
 const inputCls = "w-full rounded-xl border border-input bg-white px-3 py-2.5 sm:px-4 sm:py-3 text-sm text-primary shadow-sm outline-none transition focus:border-primary-bright focus:ring-2 focus:ring-primary-bright/20";
 
