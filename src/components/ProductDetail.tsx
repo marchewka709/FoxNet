@@ -351,7 +351,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <div className="max-w-3xl mx-auto px-3 sm:px-4 text-center">
           <h2 className="text-lg sm:text-xl font-bold text-primary">Zainteresowany tym produktem?</h2>
           <p className="text-gray-600 mt-1 text-xs sm:text-sm">Skontaktuj się z nami — doradzimy i przygotujemy indywidualną ofertę.</p>
-          <Link to="/kontakt" search={{ product: "" }} className="inline-block bg-primary text-white px-5 py-2 sm:px-6 sm:py-2 rounded text-sm font-medium mt-2 sm:mt-3 hover:bg-primary/90">
+          <Link to="/kontakt" search={{ product: product.name }} className="inline-block bg-primary text-white px-5 py-2 sm:px-6 sm:py-2 rounded text-sm font-medium mt-2 sm:mt-3 hover:bg-primary/90">
             Skontaktuj się
           </Link>
         </div>
