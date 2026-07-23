@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useRef } from "react";
 import { z } from "zod";
 import { Mail, MapPin, Phone, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -81,21 +81,21 @@ const ContactInfo = memo(function ContactInfo() {
 function ContactForm() {
   const { product } = Route.useSearch();
   const { t } = useI18n();
-  const [form, setForm] = useState({ 
-    name: "", 
-    email: "", 
-    phone: "", 
-    message: product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : "" 
-  });
   const [submitting, setSubmitting] = useState(false);
-
-  const updateField = useCallback((field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [field]: e.target.value }));
-  }, []);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse(form);
+    const data = {
+      name: nameRef.current?.value ?? "",
+      email: emailRef.current?.value ?? "",
+      phone: phoneRef.current?.value ?? "",
+      message: messageRef.current?.value ?? "",
+    };
+    const parsed = schema.safeParse(data);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
@@ -103,10 +103,13 @@ function ContactForm() {
     setSubmitting(true);
     setTimeout(() => {
       setSubmitting(false);
-      setForm({ name: "", email: "", phone: "", message: "" });
+      if (nameRef.current) nameRef.current.value = "";
+      if (emailRef.current) emailRef.current.value = "";
+      if (phoneRef.current) phoneRef.current.value = "";
+      if (messageRef.current) messageRef.current.value = "";
       toast.success(t("contact.form.thanks"));
     }, 700);
-  }, [form, t]);
+  }, [t]);
 
   return (
     <form
@@ -115,17 +118,24 @@ function ContactForm() {
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label={t("contact.form.name")}>
-          <input required maxLength={100} value={form.name} onChange={updateField("name")} className={inputCls} />
+          <input ref={nameRef} required maxLength={100} defaultValue="" className={inputCls} />
         </Field>
         <Field label={t("contact.form.email")}>
-          <input required type="email" maxLength={255} value={form.email} onChange={updateField("email")} className={inputCls} />
+          <input ref={emailRef} required type="email" maxLength={255} defaultValue="" className={inputCls} />
         </Field>
       </div>
       <Field label={t("contact.form.phone")}>
-        <input maxLength={30} value={form.phone} onChange={updateField("phone")} className={inputCls} />
+        <input ref={phoneRef} maxLength={30} defaultValue="" className={inputCls} />
       </Field>
       <Field label={t("contact.form.message")}>
-        <textarea required maxLength={1000} rows={6} value={form.message} onChange={updateField("message")} className={`${inputCls} resize-none`} />
+        <textarea
+          ref={messageRef}
+          required
+          maxLength={1000}
+          rows={6}
+          defaultValue={product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : ""}
+          className={`${inputCls} resize-none`}
+        />
       </Field>
       <button
         type="submit"
