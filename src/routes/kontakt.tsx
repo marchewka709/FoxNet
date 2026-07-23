@@ -3,7 +3,7 @@ import { useState, useCallback, memo, useRef } from "react";
 import { z } from "zod";
 import { Mail, MapPin, Phone, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell, PageHero } from "@/components/PageShell";
+import { PageShell } from "@/components/PageShell";
 import { useI18n, type TKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/kontakt")({
@@ -36,7 +36,10 @@ function ContactPage() {
   const { t } = useI18n();
   return (
     <PageShell>
-      <PageHero title="Kontakt" subtitle="Skontaktuj się z nami" />
+      <section className="relative overflow-hidden border-b border-primary/8 bg-gradient-to-b from-secondary to-white pt-20 pb-12 text-center sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-20">
+        <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl">Kontakt</h1>
+        <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">Skontaktuj się z nami</p>
+      </section>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-5">
           <ContactInfo />

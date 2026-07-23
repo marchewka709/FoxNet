@@ -1,7 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+  import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +31,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   return (
-    <motion.header
-      initial={{ y: -60, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+    <header
       className={cn(
         "sticky top-0 z-50 w-full transition-all",
         scrolled ? "glass-header shadow-card" : "bg-white/40 backdrop-blur-md",
@@ -59,11 +55,7 @@ export function SiteHeader() {
                 <>
                   <span className="relative z-10">{t(item.key)}</span>
                   {isActive && (
-                    <motion.span
-                      layoutId="nav-pill"
-                      className="absolute inset-0 rounded-full bg-primary/8"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
+                    <span className="absolute inset-0 rounded-full bg-primary/8" />
                   )}
                 </>
               )}
@@ -108,30 +100,23 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-primary/8 bg-white/90 backdrop-blur-xl lg:hidden"
-          >
-            <nav className="flex flex-col p-3 sm:p-4">
-              {NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="rounded-lg px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5"
-                  activeProps={{ className: "bg-primary/8" }}
-                  activeOptions={{ exact: item.to === "/" }}
-                >
-                  {t(item.key)}
-                </Link>
-              ))}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+      {open && (
+        <div className="border-t border-primary/8 bg-white/90 backdrop-blur-xl lg:hidden">
+          <nav className="flex flex-col p-3 sm:p-4">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="rounded-lg px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5"
+                activeProps={{ className: "bg-primary/8" }}
+                activeOptions={{ exact: item.to === "/" }}
+              >
+                {t(item.key)}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </header>
   );
 }
