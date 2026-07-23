@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useCallback, useMemo, useState, type ReactNode } from "react";
 
 export type Lang = "pl" | "en";
 
@@ -177,12 +177,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const stored = typeof window !== "undefined" ? (localStorage.getItem("foxnet-lang") as Lang | null) : null;
     if (stored === "pl" || stored === "en") setLangState(stored);
   }, []);
-  const setLang = (l: Lang) => {
+  const setLang = useCallback((l: Lang) => {
     setLangState(l);
     if (typeof window !== "undefined") localStorage.setItem("foxnet-lang", l);
-  };
-  const t = (k: TKey) => dict[k]?.[lang] ?? k;
-  return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
+  }, []);
+  const t = useCallback((k: TKey) => dict[k]?.[lang] ?? k, [lang]);
+  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export const useI18n = () => useContext(I18nContext);

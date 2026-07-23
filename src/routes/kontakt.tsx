@@ -82,6 +82,7 @@ function ContactForm() {
   const { product } = Route.useSearch();
   const { t } = useI18n();
   const [submitting, setSubmitting] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   // Use refs to avoid re-renders on every keystroke
   const formRef = useRef({
@@ -107,16 +108,14 @@ function ContactForm() {
     setTimeout(() => {
       setSubmitting(false);
       formRef.current = { name: "", email: "", phone: "", message: "" };
-      // Force re-render to clear inputs
-      forceUpdate(fn => fn + 1);
+      setFormKey(k => k + 1);
       toast.success(t("contact.form.thanks"));
     }, 700);
   }, [t]);
 
-  const [, forceUpdate] = useState(0);
-
   return (
     <form
+      key={formKey}
       onSubmit={handleSubmit}
       className="lg:col-span-3 space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-primary/10 bg-white p-5 shadow-elegant sm:p-8"
     >
