@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, memo, useRef } from "react";
+import { useState, useCallback, memo } from "react";
 import { z } from "zod";
 import { Mail, MapPin, Phone, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -81,25 +81,21 @@ const ContactInfo = memo(function ContactInfo() {
 function ContactForm() {
   const { product } = Route.useSearch();
   const { t } = useI18n();
-  const [submitting, setSubmitting] = useState(false);
-  const [formKey, setFormKey] = useState(0);
-
-  // Use refs to avoid re-renders on every keystroke
-  const formRef = useRef({
-    name: "",
-    email: "",
-    phone: "",
-    message: product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : ""
+  const [form, setForm] = useState({ 
+    name: "", 
+    email: "", 
+    phone: "", 
+    message: product ? `Dzień dobry,\n\nJestem zainteresowany modelem: ${product}\n\n` : "" 
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = useCallback((field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    formRef.current = { ...formRef.current, [field]: e.target.value };
+  const updateField = useCallback((field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
   }, []);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    const data = formRef.current;
-    const parsed = schema.safeParse(data);
+    const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
@@ -107,56 +103,29 @@ function ContactForm() {
     setSubmitting(true);
     setTimeout(() => {
       setSubmitting(false);
-      formRef.current = { name: "", email: "", phone: "", message: "" };
-      setFormKey(k => k + 1);
+      setForm({ name: "", email: "", phone: "", message: "" });
       toast.success(t("contact.form.thanks"));
     }, 700);
-  }, [t]);
+  }, [form, t]);
 
   return (
     <form
-      key={formKey}
       onSubmit={handleSubmit}
       className="lg:col-span-3 space-y-4 sm:space-y-5 rounded-2xl sm:rounded-3xl border border-primary/10 bg-white p-5 shadow-elegant sm:p-8"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label={t("contact.form.name")}>
-          <input
-            required
-            maxLength={100}
-            defaultValue={formRef.current.name}
-            onChange={handleChange("name")}
-            className={inputCls}
-          />
+          <input required maxLength={100} value={form.name} onChange={updateField("name")} className={inputCls} />
         </Field>
         <Field label={t("contact.form.email")}>
-          <input
-            required
-            type="email"
-            maxLength={255}
-            defaultValue={formRef.current.email}
-            onChange={handleChange("email")}
-            className={inputCls}
-          />
+          <input required type="email" maxLength={255} value={form.email} onChange={updateField("email")} className={inputCls} />
         </Field>
       </div>
       <Field label={t("contact.form.phone")}>
-        <input
-          maxLength={30}
-          defaultValue={formRef.current.phone}
-          onChange={handleChange("phone")}
-          className={inputCls}
-        />
+        <input maxLength={30} value={form.phone} onChange={updateField("phone")} className={inputCls} />
       </Field>
       <Field label={t("contact.form.message")}>
-        <textarea
-          required
-          maxLength={1000}
-          rows={6}
-          defaultValue={formRef.current.message}
-          onChange={handleChange("message")}
-          className={`${inputCls} resize-none`}
-        />
+        <textarea required maxLength={1000} rows={6} value={form.message} onChange={updateField("message")} className={`${inputCls} resize-none`} />
       </Field>
       <button
         type="submit"
